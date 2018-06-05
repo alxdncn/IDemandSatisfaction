@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 3cf2bd372df5c4b2a9bd684b2c909c34
+timeCreated: 1522612587
+licenseType: Pro
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: GarineldoNo01
+  fontNames:
+  - GarineldoNo01
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

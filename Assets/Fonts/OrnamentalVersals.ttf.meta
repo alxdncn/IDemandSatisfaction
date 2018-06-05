@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 20657e980f15645fb800b5d5a0221aa1
+timeCreated: 1522612587
+licenseType: Pro
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Ornamental Versals
+  fontNames:
+  - Ornamental Versals
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

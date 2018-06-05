@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 8cbf959d5e8724147b0dd20235c7d512
+timeCreated: 1522612587
+licenseType: Pro
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Ornamental Versals Black
+  fontNames:
+  - Ornamental Versals Black
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
