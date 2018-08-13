@@ -14,11 +14,13 @@ public class CameraBehavior : MonoBehaviour {
 
     void OnEnable(){
         GameState.Instance.endGame += OnEndGame;
+        GameState.Instance.neutralEnd += OnNeutralEnd;
         GameState.Instance.restart += Restart;
     }
 
     void OnDisable(){
         GameState.Instance.endGame -= OnEndGame;
+        GameState.Instance.neutralEnd -= OnNeutralEnd;
         GameState.Instance.restart -= Restart;
     }
 
@@ -47,6 +49,10 @@ public class CameraBehavior : MonoBehaviour {
                 anim.Play("EndLeft");
             }
         }
+    }
+
+    void OnNeutralEnd(){
+        anim.Play("CamNeutralEnd");
     }
 
     void FireStart(){

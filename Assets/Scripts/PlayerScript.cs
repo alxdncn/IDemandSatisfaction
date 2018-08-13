@@ -7,7 +7,6 @@ public class PlayerScript : MonoBehaviour {
 	//KeyCode.Joystick1Button6
 	//KeyCode.Joystick1Button7
 	[SerializeField] PlayerScript otherPlayer;
-	[SerializeField] KeyCode releaseKey;
 	[System.NonSerialized] public Animator animator;
 
 	float holdToStartTimer;
@@ -28,18 +27,36 @@ public class PlayerScript : MonoBehaviour {
 	AudioSource audioSource;
 	float startPitch;
 
+	Vector3 playerStartPos;
+
+	int moveDirection = 1;
+
+	bool move = false;
+
+	[SerializeField] float moveSpeed;
+
+	InputHandler inputScript;
+
 	// Use this for initialization
 	void Awake () {
+		playerStartPos = transform.parent.localPosition;
+		// Debug.Log(playerStartPos);
+		moveDirection *= (int)Mathf.Sign(playerStartPos.x);
+
 		animator = GetComponent<Animator> ();
 		if(animator == null){
 			animator = GetComponentInChildren<Animator>();
 		}
 		holdToStartTimer = SharedPlayerState.Instance.holdToStartTime;
 		
+		inputScript = GetComponent<InputHandler>();
+
 		scoreAnimator = scoreObject.GetComponent<Animator>();
 		scoreText = scoreObject.GetComponentInChildren<Text>();
+		scoreText.text = inputScript.instructionText;
 		audioSource = GetComponentInParent<AudioSource>();
 		startPitch = audioSource.pitch;
+
 		// myText.gameObject.SetActive (false);
 	}
 
@@ -47,26 +64,39 @@ public class PlayerScript : MonoBehaviour {
 		GameState.Instance.endGame += OnGameEnd;
 		otherPlayer.playerAnimationFinished += Die;
 		GameState.Instance.restart += Restart;
+		GameState.Instance.neutralEnd += NeutralEnd;
+		GameState.Instance.startDuel += StartDuel;
 	}
 
 	void OnDisable(){
 		GameState.Instance.endGame -= OnGameEnd;
 		otherPlayer.playerAnimationFinished -= Die;
 		GameState.Instance.restart -= Restart;
+		GameState.Instance.neutralEnd -= NeutralEnd;
+		GameState.Instance.startDuel -= StartDuel;
 	}
 
 	void Restart(){
+		move = false;
+		transform.parent.localPosition = playerStartPos;
+		Debug.Log("Beginning of restart " + transform.parent.position);
 		holdToStartTimer = SharedPlayerState.Instance.holdToStartTime;
 		animator.Play("Enter");
 		scoreAnimator.Play("Default");
 		animator.speed = 1f;
 		audioSource.volume = 0f; //In case the sound effect is still playing
 		audioSource.pitch = startPitch;
+		Debug.Log("After restart " + transform.parent.position);
+	}
+
+	void Update(){
+		if(move){
+			transform.parent.position += new Vector3(moveSpeed * Time.deltaTime * moveDirection, 0, 0);
+		}
 	}
 	
-	// Update is called once per frame
 	void LateUpdate () {
-		if (!ready && Input.GetKey (releaseKey)) {
+		if (!ready && inputScript.playerState == InputState.HELD) {
 			holdToStartTimer -= Time.deltaTime;
 
 			if (holdToStartTimer < 0) {
@@ -74,9 +104,10 @@ public class PlayerScript : MonoBehaviour {
 				holdToStartTimer = SharedPlayerState.Instance.holdToStartTime;
 				playerReady();
 			}
-		} else if (Input.GetKeyUp (releaseKey) && ready) {
+		} else if (inputScript.playerState == InputState.UP && ready) {
 			holdToStartTimer = SharedPlayerState.Instance.holdToStartTime;
 			ready = false;
+			move = false;
 			playerReleased(this);
 		}
 	}
@@ -115,10 +146,12 @@ public class PlayerScript : MonoBehaviour {
 	public event PlayerAnimationFinished playerAnimationFinished;
 
 	void OnGameEnd(PlayerScript playerThatWon, bool instant){
+		move = false;
 		if(playerThatWon != this){
 			animator.speed = 0;
 		} else{
 			if(instant){
+				animator.Play("None");
 				animator.speed = 1f;
 				// animator.Play(instantKillAnimation.name); //This animation is called from Camera animation already!
 			}
@@ -134,6 +167,10 @@ public class PlayerScript : MonoBehaviour {
 		}
 	}
 
+	void StartDuel(){
+		scoreText.text = points.ToString();
+	}
+
 	public void GetPoint(){
 		points++;
 		string playerSide = "Left";
@@ -143,6 +180,20 @@ public class PlayerScript : MonoBehaviour {
 		scoreAnimator.Play("MoveToCenter" + playerSide);
 
 		StartCoroutine(ChangeText());
+	}
+
+	void StartMove(){
+		move = true;
+	}
+
+	void EndMove(){
+		move = false;
+	}
+
+	void NeutralEnd(){
+		move = false;
+		animator.speed = 1f;
+		animator.Play("RunAway");
 	}
 
 	IEnumerator ChangeText(){

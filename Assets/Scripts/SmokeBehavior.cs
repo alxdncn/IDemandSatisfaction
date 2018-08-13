@@ -35,6 +35,7 @@ public class SmokeBehavior : MonoBehaviour {
 	void Restart(){
 		sRend.enabled = false;
 		anim.Play("Default");
+		follow = true;
 	}
 
 	void Update(){

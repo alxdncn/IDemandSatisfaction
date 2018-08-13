@@ -9,10 +9,16 @@ public class GameState : MonoBehaviour {
 	public static GameState Instance { get { return instance; } }
 
 
+	AudioSource audioSource;
+	[SerializeField] AudioClip secondTickAudio;
+	[SerializeField] AudioClip startAudio;
+
+	int lastSecond = 10;
+ 
 	[SerializeField] Text timerText;
 
-	const float MIN_SPEED = 1f;
-	public const float MAX_SPEED = 5f;
+	const float MIN_SPEED = 2f;
+	public const float MAX_SPEED = 6f;
 
 	public bool someoneDied = false;
 
@@ -20,8 +26,8 @@ public class GameState : MonoBehaviour {
 	public bool started = false;
 	bool onePlayerReleased = false;
 
-	[SerializeField] float roundTime = 10f;
-	float roundTimer;
+	public float roundTime = 10f;
+	[System.NonSerialized] public float roundTimer;
 
 	[System.NonSerialized] public bool gameOver = true;
 
@@ -33,6 +39,12 @@ public class GameState : MonoBehaviour {
 
 	public delegate void Restart();
 	public event Restart restart;
+
+	public delegate void StartDuel();
+	public event StartDuel startDuel;
+
+	public delegate void NeutralEnd();
+	public event NeutralEnd neutralEnd;
 
 	bool canRestart = false;
 
@@ -47,6 +59,8 @@ public class GameState : MonoBehaviour {
 
 		roundTimer = roundTime;
 
+		audioSource = GetComponent<AudioSource>();
+
 		restart += RestartGameState;
 	}
 
@@ -60,6 +74,7 @@ public class GameState : MonoBehaviour {
 		timerText.gameObject.SetActive (false);
 		timerText.text = roundTime.ToString();
 		playersReady = 0;
+		audioSource.pitch = 1f;
 	}
 
 	public void StartGame(){
@@ -100,14 +115,25 @@ public class GameState : MonoBehaviour {
 
 	void Update(){
 		if (started && !gameOver) {
-			timerText.text = Mathf.Ceil (roundTimer).ToString ();
-
-			roundTimer -= Time.deltaTime;
 			if (roundTimer < 0) {
-				//Do something??
+				if(neutralEnd != null){
+					neutralEnd();
+				}
+				gameOver = true;
+				someoneDied = true;
 				roundTimer = roundTime;
-				started = false;
-//				playersReady = 0;
+				timerText.text = "0";
+			} else{
+				int second = Mathf.CeilToInt (roundTimer);
+				timerText.text = second.ToString ();
+
+				if(second != lastSecond){
+					audioSource.pitch = Random.Range(0.95f, 1.05f);
+					audioSource.PlayOneShot(secondTickAudio);
+					lastSecond = second;
+				}
+
+				roundTimer -= Time.deltaTime;
 			}
 		}
 
@@ -131,6 +157,13 @@ public class GameState : MonoBehaviour {
 		if (playersReady == 2) {
 			timerText.gameObject.SetActive (true);
 			started = true;
+			audioSource.PlayOneShot(startAudio);
+			if(startDuel != null){
+				startDuel();
+			}
+			for(int i = 0; i < players.Length; i++){ //This should be on the players, and they should subscribe to startGame
+				players[i].animator.Play("Paces");
+			}
 		} else if (playersReady > 2) {
 			Debug.LogError ("Too many players checked in");
 		}
@@ -141,7 +174,6 @@ public class GameState : MonoBehaviour {
 			return;
 
 		if(onePlayerReleased){
-			player.animator.speed = MAX_SPEED;
 			endGame(player, true);
 		} else if(started){
 			player.animator.speed = GetSpeed();
